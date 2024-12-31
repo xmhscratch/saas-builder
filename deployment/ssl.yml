@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: localdomain-ssl
+  namespace: localdomain
+data:
+  tls.crt: 
+  tls.key:
+type: Opaque

@@ -1,0 +1,11 @@
+{
+    "name": "deploy.sysenv",
+    "private": true,
+    "type": "module",
+    "scripts": {
+      "build": "docker build -t localhost:5000/sysenv:latest ./",
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {}
+  }
+  

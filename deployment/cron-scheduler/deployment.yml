@@ -1,0 +1,81 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    service.name: cron-scheduler
+  name: cron-scheduler
+  namespace: localdomain
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service.name: cron-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+      maxSurge: 1
+  minReadySeconds: 30
+  template:
+    metadata:
+      labels:
+        service.name: cron-scheduler
+    spec:
+      securityContext:
+        runAsUser: 0
+        fsGroup: 0
+      containers:
+      - env:
+        - name: APP_NAME
+          value: cron-scheduler
+        - name: GO_ENV
+          value: "production"
+        image: localhost:5000/cron-scheduler:latest
+        name: cron-scheduler
+        resources: {}
+          # requests:
+          #   memory: "512Mi"
+          #   cpu: "512m"
+          # limits:
+          #   memory: "1024Mi"
+          #   cpu: "1024m"
+        ports:
+        - containerPort: 3500
+          protocol: TCP
+        volumeMounts:
+        - name: tmp-pvc
+          mountPath: "/tmp/"
+        - name: data-pvc
+          mountPath: "/export/data/"
+        # readinessProbe:
+        #   failureThreshold: 3
+        #   httpGet:
+        #     path: /health
+        #     port: 3500
+        #     scheme: HTTP
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 10
+        #   successThreshold: 1
+        #   timeoutSeconds: 1
+        # livenessProbe:
+        #   failureThreshold: 3
+        #   httpGet:
+        #     path: /health
+        #     port: 3500
+        #     scheme: HTTP
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 10
+        #   successThreshold: 1
+        #   timeoutSeconds: 1
+        imagePullPolicy: Always
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: registry-credentials
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: tmp-pvc
+        persistentVolumeClaim:
+          claimName: tmp
+      - name: data-pvc
+        persistentVolumeClaim:
+          claimName: data

@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service.name: asset-vendor
+  name: asset-vendor
+  namespace: localdomain
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service.name: asset-vendor
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+      maxSurge: 1
+  minReadySeconds: 30
+  template:
+    metadata:
+      labels:
+        service.name: asset-vendor
+    spec:
+      securityContext:
+        runAsUser: 0
+        fsGroup: 0
+      initContainers:
+      - name: install-asset-vendor-node-modules
+        image: localhost:5000/microservice:latest
+        command: ["/bin/sh", "-c", "cd /export/services/asset-vendor/application/; [ -d \"./node_modules\" ] && echo \"ok\" || npm install;"]
+        volumeMounts:
+        - name: services-pvc
+          mountPath: "/export/services/"
+      containers:
+      - env:
+        - name: APP_NAME
+          value: asset-vendor
+        - name: DEFAULT_PORT_NUMBER
+          value: "3110"
+        - name: NODE_ENV
+          value: "production"
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/export/config/google.json"
+        image: localhost:5000/microservice:latest
+        name: asset-vendor
+        command: ["/bin/sh", "-c"]
+        args: ["node /export/services/asset-vendor/index.js"]
+        resources: {}
+          # requests:
+          #   memory: "512Mi"
+          #   cpu: "512m"
+          # limits:
+          #   memory: "1024Mi"
+          #   cpu: "1024m"
+        ports:
+        - containerPort: 3110
+          protocol: TCP
+        volumeMounts:
+        - name: tmp-pvc
+          mountPath: "/tmp/"
+        - name: data-pvc
+          mountPath: "/export/data/"
+        - name: config-pvc
+          mountPath: "/export/config/"
+        - name: services-pvc
+          mountPath: "/export/services/"
+        - name: src-pvc
+          mountPath: "/export/src/"
+        # readinessProbe:
+        #   failureThreshold: 3
+        #   httpGet:
+        #     path: /health
+        #     port: 3110
+        #     scheme: HTTP
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 10
+        #   successThreshold: 1
+        #   timeoutSeconds: 1
+        # livenessProbe:
+        #   failureThreshold: 3
+        #   httpGet:
+        #     path: /health
+        #     port: 3110
+        #     scheme: HTTP
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 10
+        #   successThreshold: 1
+        #   timeoutSeconds: 1
+        imagePullPolicy: Always
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: registry-credentials
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: tmp-pvc
+        persistentVolumeClaim:
+          claimName: tmp
+      - name: data-pvc
+        persistentVolumeClaim:
+          claimName: data
+      - name: config-pvc
+        persistentVolumeClaim:
+          claimName: config
+      - name: services-pvc
+        persistentVolumeClaim:
+          claimName: services
+      - name: src-pvc
+        persistentVolumeClaim:
+          claimName: src

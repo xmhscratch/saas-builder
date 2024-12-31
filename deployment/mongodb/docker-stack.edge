@@ -1,0 +1,167 @@
+version: '3.9'
+
+services:
+  sharded:
+    image: bitnami/mongodb-sharded:6.0
+    environment:
+    - MONGODB_ADVERTISED_HOSTNAME=mongodb_sharded
+    - MONGODB_SHARDING_MODE=mongos
+    - MONGODB_ROOT_PASSWORD={{ MONGODB_ROOT_PASSWORD }}
+    - MONGODB_CFG_PRIMARY_HOST=mongodb_config_svc
+    - MONGODB_CFG_REPLICA_SET_NAME={{ MONGODB_REPLICA_SET_NAME }}_config_svc
+    - MONGODB_REPLICA_SET_KEY={{ MONGODB_REPLICA_SET_KEY }}
+    ports:
+    - 27017:27017
+    networks:
+    - backend
+    deploy:
+      placement:
+        constraints:
+        - node.role == manager
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 2048M
+        reservations:
+          cpus: '0.1'
+          memory: 32M
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 180s
+
+  config_svc:
+    image: bitnami/mongodb-sharded:6.0
+    environment:
+    - MONGODB_ADVERTISED_HOSTNAME=mongodb_config_svc
+    - MONGODB_SHARDING_MODE=configsvr
+    - MONGODB_ROOT_PASSWORD={{ MONGODB_ROOT_PASSWORD }}
+    - MONGODB_REPLICA_SET_MODE=primary
+    - MONGODB_REPLICA_SET_KEY={{ MONGODB_REPLICA_SET_KEY }}
+    - MONGODB_REPLICA_SET_NAME={{ MONGODB_REPLICA_SET_NAME }}_config_svc
+    networks:
+    - backend
+    volumes:
+    - config:/bitnami/mongodb
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+        - node.role == manager
+        - node.hostname == {{ NODE_SVC_HOSTNAME }}
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 2048M
+        reservations:
+          cpus: '0.1'
+          memory: 32M
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+
+  shard_svcn001:
+    image: bitnami/mongodb-sharded:6.0
+    environment:
+    - MONGODB_ADVERTISED_HOSTNAME=mongodb_shard_svcn001
+    - MONGODB_SHARDING_MODE=shardsvr
+    - MONGODB_MONGOS_HOST=mongodb_sharded
+    - MONGODB_ROOT_PASSWORD={{ MONGODB_ROOT_PASSWORD }}
+    - MONGODB_REPLICA_SET_MODE=primary
+    - MONGODB_REPLICA_SET_NAME={{ MONGODB_REPLICA_SET_NAME }}_shard_svc
+    - MONGODB_REPLICA_SET_KEY={{ MONGODB_REPLICA_SET_KEY }}
+    networks:
+    - backend
+    volumes:
+    - data:/bitnami/mongodb
+    depends_on:
+    - sharded
+    - config
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+        - node.role != manager
+        - node.hostname == {{ NODE_SVCN001_HOSTNAME }}
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 2048M
+        reservations:
+          cpus: '0.1'
+          memory: 32M
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 180s
+
+  shard_svcn002:
+    image: bitnami/mongodb-sharded:6.0
+    environment:
+    - MONGODB_ADVERTISED_HOSTNAME=mongodb_shard_svcn002
+    - MONGODB_SHARDING_MODE=shardsvr
+    - MONGODB_MONGOS_HOST=mongodb_sharded
+    - MONGODB_PRIMARY_HOST=mongodb_shard_svcn001
+    - MONGODB_PRIMARY_ROOT_PASSWORD={{ MONGODB_ROOT_PASSWORD }}
+    - MONGODB_REPLICA_SET_MODE=secondary
+    - MONGODB_REPLICA_SET_NAME={{ MONGODB_REPLICA_SET_NAME }}_shard_svc
+    - MONGODB_REPLICA_SET_KEY={{ MONGODB_REPLICA_SET_KEY }}
+    networks:
+    - backend
+    volumes:
+    - data:/bitnami/mongodb
+    depends_on:
+    - sharded
+    - config
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+        - node.role != manager
+        - node.hostname == {{ NODE_SVCN002_HOSTNAME }}
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 2048M
+        reservations:
+          cpus: '0.1'
+          memory: 32M
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 180s
+
+networks:
+  backend:
+    driver: overlay
+    attachable: true
+
+volumes:
+  config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/home/web/data/mongodb/mongodb_config/'
+
+  data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/home/web/data/mongodb/mongodb_data/'

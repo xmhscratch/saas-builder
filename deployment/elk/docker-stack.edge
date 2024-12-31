@@ -1,0 +1,110 @@
+version: '3.9'
+
+services:
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.4.2
+  #   ports:
+  #   - "9200:9200"
+  #   - "9300:9300"
+  #   configs:
+  #   - source: elastic_config
+  #     target: /usr/share/elasticsearch/config/elasticsearch.yml
+  #   environment:
+  #     ES_JAVA_OPTS: "-Xmx2048m -Xms2048m"
+  #     ELASTIC_PASSWORD: changeme
+  #   networks:
+  #   - backend
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.4.2
+    ports:
+    - "5000:5000"
+    - "9600:9600"
+    # configs:
+    # - source: logstash_config
+    #   target: /usr/share/logstash/config/logstash.yml
+    environment:
+      LS_JAVA_OPTS: "-Xmx2048m -Xms2048m"
+      XPACK_MONITORING_ENABLED: "false"
+      HTTP_HOST: "0.0.0.0"
+    networks:
+    - backend
+    volumes:
+    - logstash_pipeline:/usr/share/logstash/pipeline/
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:8.4.2
+  #   ports:
+  #   - "5601:5601"
+  #   configs:
+  #   - source: kibana_config
+  #     target: /usr/share/kibana/config/kibana.yml
+  #   networks:
+  #   - backend
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+
+networks:
+  backend:
+    driver: overlay
+    attachable: true
+
+# configs:
+#   # elastic_config:
+#   #   external: true
+#   logstash_config:
+#     external: true
+#   # kibana_config:
+#   #   external: true
+
+volumes:
+  logstash_pipeline:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/home/web/data/logstash/pipeline/'
+
+# # elastic_config
+# cluster.name: "docker-cluster"
+# network.host: 0.0.0.0
+# discovery.type: single-node
+# xpack.license.self_generated.type: trial
+# xpack.security.enabled: true
+# xpack.monitoring.collection.enabled: true
+
+# # logstash_config
+# http.host: "0.0.0.0"
+# xpack.monitoring.elasticsearch.hosts: [ "http://elasticsearch:9200" ]
+# xpack.monitoring.enabled: true
+# xpack.monitoring.elasticsearch.username: elastic
+# xpack.monitoring.elasticsearch.password: changeme
+
+# # logstash_pipeline
+# input {
+#   tcp {
+#     port => 5000
+#   }
+# }
+# output {
+#   elasticsearch {
+#     hosts => "elasticsearch:9200"
+#     user => "elastic"
+#     password => "changeme"
+#   }
+# }
+
+# # kibana_config
+# server.name: kibana
+# server.host: "0"
+# elasticsearch.hosts: [ "http://elasticsearch:9200" ]
+# xpack.monitoring.ui.container.elasticsearch.enabled: true
+# elasticsearch.username: elastic
+# elasticsearch.password: changeme

@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    service.name: asset-vendor
+  name: asset-vendor
+spec:
+  type: NodePort
+  ports:
+  - name: "http"
+    port: 3110
+    targetPort: 3110
+  selector:
+    service.name: asset-vendor

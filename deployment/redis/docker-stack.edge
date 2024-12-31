@@ -1,0 +1,87 @@
+version: '3.9'
+
+services:
+  master:
+    image: bitnami/redis:7.0
+    environment:
+    - REDIS_REPLICATION_MODE=master
+    - REDIS_PASSWORD={{ REDIS_PASSWORD }}
+    - ALLOW_EMPTY_PASSWORD={{ REDIS_ALLOW_EMPTY_PASSWORD }}
+    - REDIS_TLS_ENABLED=no
+    - REDIS_TLS_PORT_NUMBER=6379
+    - REDIS_TLS_AUTH_CLIENTS=no
+    ports:
+    - 6379:6379
+    networks:
+    - backend
+    volumes:
+    - data:/bitnami/redis
+    deploy:
+      placement:
+        constraints:
+        - node.role == manager
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 1024M
+        reservations:
+          cpus: '0.1'
+          memory: 4M
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 180s
+
+  replica:
+    image: bitnami/redis:7.0
+    environment:
+    - REDIS_REPLICATION_MODE=slave
+    - REDIS_MASTER_HOST={{ NODE_SVC_IP }}
+    - REDIS_MASTER_PORT_NUMBER=6379
+    - REDIS_MASTER_PASSWORD={{ REDIS_PASSWORD }}
+    - REDIS_PASSWORD={{ REDIS_PASSWORD }}
+    - ALLOW_EMPTY_PASSWORD={{ REDIS_ALLOW_EMPTY_PASSWORD }}
+    - REDIS_TLS_ENABLED=no
+    - REDIS_TLS_PORT_NUMBER=6379
+    - REDIS_TLS_AUTH_CLIENTS=no
+    networks:
+    - backend
+    depends_on:
+    - master
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+        - node.role != manager
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 1024M
+        reservations:
+          cpus: '0.1'
+          memory: 4M
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 180s
+
+networks:
+  backend:
+    driver: overlay
+    attachable: true
+
+volumes:
+  data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/home/web/data/redis/redis_data/'

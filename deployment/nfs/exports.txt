@@ -1,0 +1,1 @@
+/home/web/      *(rw,fsid=0,nohide,insecure,subtree_check,no_root_squash,sync)

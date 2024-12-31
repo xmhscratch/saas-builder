@@ -1,0 +1,337 @@
+version: '3.9'
+
+{{--  https://cdn.mysql.com//Downloads/Connector-J/mysql-connector-j-9.1.0.zip  --}}
+{{--  https://downloads.apache.org/opennlp/models/langdetect/1.8.3/langdetect-183.bin  --}}
+
+services:
+  solr_svc:
+    image: solr:8.11
+    container_name: solr_solr_svc
+    ports:
+    - 8983:8983
+    environment:
+    - SOLR_AUTH_TYPE=basic
+    - SOLR_AUTHENTICATION_OPTS=-Dbasicauth=solr:SolrRocks
+    - SOLR_OPTS=$SOLR_OPTS -Djute.maxbuffer=0x200000 -Dpkiauth.ttl=10000 -Dsolr.autoSoftCommit.maxTime=10000 -Denable.packages=true -Dsolr.httpclient.builder.factory=org.apache.solr.client.solrj.impl.PreemptiveBasicAuthClientBuilderFactory
+    - SOLR_JAVA_MEM=-Xms512m -Xmx512m -XX:+UseG1GC -XX:-UseLargePages -XX:MaxGCPauseMillis=500 -XX:+UnlockExperimentalVMOptions -XX:G1MaxNewSizePercent=30 -XX:G1NewSizePercent=5 -XX:G1HeapRegionSize=32M -XX:InitiatingHeapOccupancyPercent=70
+    - SOLR_HEAP=512m
+    - SOLR_WAIT_FOR_ZK=30
+    - ZK_HOST=solr_zoo_svc:2181,solr_zoo_svcn001:2181,solr_zoo_svcn002:2181/solr
+    - ZK_CREATE_CHROOT=true
+    networks:
+    - backend
+    depends_on:
+    - zoo_svc
+    - zoo_svcn001
+    - zoo_svcn002
+    volumes:
+    - solr_svc_data:/var/solr
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+        - node.role == manager
+        - node.hostname == {{ NODE_SVC_HOSTNAME }}
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 4048M
+        reservations:
+          cpus: '0.25'
+          memory: 100M
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 180s
+
+  solr_svcn001:
+    image: solr:8.11
+    container_name: solr_solr_svcn001
+    environment:
+    - SOLR_AUTH_TYPE=basic
+    - SOLR_AUTHENTICATION_OPTS=-Dbasicauth=solr:SolrRocks
+    - SOLR_OPTS=$SOLR_OPTS -Djute.maxbuffer=0x200000 -Dpkiauth.ttl=10000 -Dsolr.autoSoftCommit.maxTime=10000 -Denable.packages=true -Dsolr.httpclient.builder.factory=org.apache.solr.client.solrj.impl.PreemptiveBasicAuthClientBuilderFactory
+    - SOLR_JAVA_MEM=-Xms512m -Xmx512m -XX:+UseG1GC -XX:-UseLargePages -XX:MaxGCPauseMillis=500 -XX:+UnlockExperimentalVMOptions -XX:G1MaxNewSizePercent=30 -XX:G1NewSizePercent=5 -XX:G1HeapRegionSize=32M -XX:InitiatingHeapOccupancyPercent=70
+    - SOLR_HEAP=512m
+    - SOLR_WAIT_FOR_ZK=30
+    - ZK_HOST=solr_zoo_svc:2181,solr_zoo_svcn001:2181,solr_zoo_svcn002:2181/solr
+    - ZK_CREATE_CHROOT=true
+    networks:
+    - backend
+    depends_on:
+    - zoo_svc
+    volumes:
+    - solr_svcn001_data:/var/solr
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+        - node.role != manager
+        - node.hostname == {{ NODE_SVCN001_HOSTNAME }}
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 1024M
+        reservations:
+          cpus: '0.1'
+          memory: 4M
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 180s
+
+  solr_svcn002:
+    image: solr:8.11
+    container_name: solr_solr_svcn002
+    environment:
+    - SOLR_AUTH_TYPE=basic
+    - SOLR_AUTHENTICATION_OPTS=-Dbasicauth=solr:SolrRocks
+    - SOLR_OPTS=$SOLR_OPTS -Djute.maxbuffer=0x200000 -Dpkiauth.ttl=10000 -Dsolr.autoSoftCommit.maxTime=10000 -Denable.packages=true -Dsolr.httpclient.builder.factory=org.apache.solr.client.solrj.impl.PreemptiveBasicAuthClientBuilderFactory
+    - SOLR_JAVA_MEM=-Xms512m -Xmx512m -XX:+UseG1GC -XX:-UseLargePages -XX:MaxGCPauseMillis=500 -XX:+UnlockExperimentalVMOptions -XX:G1MaxNewSizePercent=30 -XX:G1NewSizePercent=5 -XX:G1HeapRegionSize=32M -XX:InitiatingHeapOccupancyPercent=70
+    - SOLR_HEAP=512m
+    - SOLR_WAIT_FOR_ZK=30
+    - ZK_HOST=solr_zoo_svc:2181,solr_zoo_svcn001:2181,solr_zoo_svcn002:2181/solr
+    - ZK_CREATE_CHROOT=true
+    networks:
+    - backend
+    depends_on:
+    - zoo_svc
+    volumes:
+    - solr_svcn002_data:/var/solr
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+        - node.role != manager
+        - node.hostname == {{ NODE_SVCN002_HOSTNAME }}
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 1024M
+        reservations:
+          cpus: '0.1'
+          memory: 4M
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 180s
+
+  zoo_svc:
+    image: zookeeper:3.6
+    container_name: solr_zoo_svc
+    restart: always
+    hostname: solr_zoo_svc
+    ports:
+    - 2181:2181
+    - 8080:8080
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_PORT: 2181
+      ZOO_SERVERS: server.1=solr_zoo_svc:2888:3888;solr_zoo_svc:2181 server.2=solr_zoo_svcn001:2888:3888;solr_zoo_svcn001:2181 server.3=solr_zoo_svcn002:2888:3888;solr_zoo_svcn002:2181
+      ZOO_TICK_TIME: 2000
+      ZOO_INIT_LIMIT: 10
+      ZOO_MAX_CLIENT_CNXNS: 60
+      ZOO_AUTOPURGE_SNAPRETAINCOUNT: 3
+      ZOO_AUTOPURGE_PURGEINTERVAL: 3
+      ZOO_STANDALONE_ENABLED: "false"
+      ZOO_LOG4J_PROP: INFO,ROLLINGFILE
+      ZOO_4LW_COMMANDS_WHITELIST: mntr,conf,ruok
+      SERVER_JVMFLAGS: -Xms2048m -Xmx2048m
+      JVMFLAGS: $JVMFLAGS -Djute.maxbuffer=5000000
+    networks:
+    - backend
+    volumes:
+    - zoo_svc_data:/data
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+        - node.role == manager
+        - node.hostname == {{ NODE_SVC_HOSTNAME }}
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 4048M
+        reservations:
+          cpus: '0.25'
+          memory: 100M
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 180s
+
+  zoo_svcn001:
+    image: zookeeper:3.6
+    container_name: solr_zoo_svcn001
+    restart: always
+    hostname: solr_zoo_svcn001
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_PORT: 2181
+      ZOO_SERVERS: server.1=solr_zoo_svc:2888:3888;solr_zoo_svc:2181 server.2=solr_zoo_svcn001:2888:3888;solr_zoo_svcn001:2181 server.3=solr_zoo_svcn002:2888:3888;solr_zoo_svcn002:2181
+      ZOO_TICK_TIME: 2000
+      ZOO_INIT_LIMIT: 10
+      ZOO_MAX_CLIENT_CNXNS: 60
+      ZOO_AUTOPURGE_SNAPRETAINCOUNT: 3
+      ZOO_AUTOPURGE_PURGEINTERVAL: 3
+      ZOO_STANDALONE_ENABLED: "false"
+      ZOO_LOG4J_PROP: INFO,ROLLINGFILE
+      ZOO_4LW_COMMANDS_WHITELIST: mntr,conf,ruok
+      SERVER_JVMFLAGS: -Xms2048m -Xmx2048m
+      JVMFLAGS: $JVMFLAGS -Djute.maxbuffer=5000000
+    networks:
+    - backend
+    volumes:
+    - zoo_svcn001_data:/data
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+        - node.role != manager
+        - node.hostname == {{ NODE_SVCN001_HOSTNAME }}
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 1024M
+        reservations:
+          cpus: '0.1'
+          memory: 4M
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 180s
+
+  zoo_svcn002:
+    image: zookeeper:3.6
+    container_name: solr_zoo_svcn002
+    restart: always
+    hostname: solr_zoo_svcn002
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_PORT: 2181
+      ZOO_SERVERS: server.1=solr_zoo_svc:2888:3888;solr_zoo_svc:2181 server.2=solr_zoo_svcn001:2888:3888;solr_zoo_svcn001:2181 server.3=solr_zoo_svcn002:2888:3888;solr_zoo_svcn002:2181
+      ZOO_TICK_TIME: 2000
+      ZOO_INIT_LIMIT: 10
+      ZOO_MAX_CLIENT_CNXNS: 60
+      ZOO_AUTOPURGE_SNAPRETAINCOUNT: 3
+      ZOO_AUTOPURGE_PURGEINTERVAL: 3
+      ZOO_STANDALONE_ENABLED: "false"
+      ZOO_LOG4J_PROP: INFO,ROLLINGFILE
+      ZOO_4LW_COMMANDS_WHITELIST: mntr,conf,ruok
+      SERVER_JVMFLAGS: -Xms2048m -Xmx2048m
+      JVMFLAGS: $JVMFLAGS -Djute.maxbuffer=5000000
+    networks:
+    - backend
+    volumes:
+    - zoo_svcn002_data:/data
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+        - node.role != manager
+        - node.hostname == {{ NODE_SVCN002_HOSTNAME }}
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 1024M
+        reservations:
+          cpus: '0.1'
+          memory: 4M
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 180s
+
+  zoonavigator:
+    image: elkozmon/zoonavigator:latest
+    container_name: solr_zoonavigator
+    ports:
+    - 8081:9000
+    environment:
+    - HTTP_PORT=9000
+    - CONNECTION_cluster_NAME=cluster
+    - CONNECTION_cluster_CONN=solr_zoo_svc:2181,solr_zoo_svcn001:2181,solr_zoo_svcn002:2181/solr
+    networks:
+    - backend
+    depends_on:
+    - zoo_svc
+    - zoo_svcn001
+    - zoo_svcn002
+
+networks:
+  backend:
+    driver: overlay
+    attachable: true
+
+volumes:
+  solr_svc_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/home/web/data/solr/solr_solr_svc_data/'
+
+  zoo_svc_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/home/web/data/zoo/solr_zoo_svc_data/'
+
+  solr_svcn001_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/home/web/data/solr/solr_solr_svcn001_data/'
+
+  zoo_svcn001_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/home/web/data/zoo/solr_zoo_svcn001_data/'
+
+  solr_svcn002_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/home/web/data/solr/solr_solr_svcn002_data/'
+
+  zoo_svcn002_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/home/web/data/zoo/solr_zoo_svcn002_data/'

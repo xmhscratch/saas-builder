@@ -1,0 +1,82 @@
+[
+    {
+        "id": "620244981c66ab7fbaac9122",
+        "root": "620244981c66ab7fbaac9122",
+        "parent": null,
+        "left": 1,
+        "right": 20,
+        "level": 0
+    },
+    {
+        "id": "620244981c66ab7fbaac9126",
+        "root": "620244981c66ab7fbaac9122",
+        "parent": "620244981c66ab7fbaac9122",
+        "left": 2,
+        "right": 19,
+        "level": 1
+    },
+    {
+        "id": "620244981c66ab7fbaac912a",
+        "root": "620244981c66ab7fbaac9122",
+        "parent": "620244981c66ab7fbaac9126",
+        "left": 3,
+        "right": 6,
+        "level": 2
+    },
+    {
+        "id": "620244981c66ab7fbaac912e",
+        "root": "620244981c66ab7fbaac9122",
+        "parent": "620244981c66ab7fbaac912a",
+        "left": 4,
+        "right": 5,
+        "level": 3
+    },
+    {
+        "id": "620244981c66ab7fbaac9132",
+        "root": "620244981c66ab7fbaac9122",
+        "parent": "620244981c66ab7fbaac9126",
+        "left": 7,
+        "right": 10,
+        "level": 2
+    },
+    {
+        "id": "620244981c66ab7fbaac9136",
+        "root": "620244981c66ab7fbaac9122",
+        "parent": "620244981c66ab7fbaac9132",
+        "left": 8,
+        "right": 9,
+        "level": 3
+    },
+    {
+        "id": "620244981c66ab7fbaac913a",
+        "root": "620244981c66ab7fbaac9122",
+        "parent": "620244981c66ab7fbaac9126",
+        "left": 11,
+        "right": 18,
+        "level": 2
+    },
+    {
+        "id": "620244981c66ab7fbaac913e",
+        "root": "620244981c66ab7fbaac9122",
+        "parent": "620244981c66ab7fbaac913a",
+        "left": 12,
+        "right": 13,
+        "level": 3
+    },
+    {
+        "id": "620244981c66ab7fbaac9142",
+        "root": "620244981c66ab7fbaac9122",
+        "parent": "620244981c66ab7fbaac913a",
+        "left": 14,
+        "right": 15,
+        "level": 3
+    },
+    {
+        "id": "620244981c66ab7fbaac9146",
+        "root": "620244981c66ab7fbaac9122",
+        "parent": "620244981c66ab7fbaac913a",
+        "left": 16,
+        "right": 17,
+        "level": 3
+    }
+]

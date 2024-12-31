@@ -1,0 +1,100 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    service.name: integration
+  name: integration
+  namespace: localdomain
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      service.name: integration
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+      maxSurge: 1
+  minReadySeconds: 30
+  template:
+    metadata:
+      labels:
+        service.name: integration
+    spec:
+      securityContext:
+        runAsUser: 0
+        fsGroup: 0
+      containers:
+      - env:
+        - name: APP_NAME
+          value: integration
+        - name: DEFAULT_PORT_NUMBER
+          value: "3600"
+        - name: NODE_ENV
+          value: "production"
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: "/export/config/google.json"
+        image: localhost:5000/microservice:latest
+        name: integration
+        resources: {}
+          # requests:
+          #   memory: "512Mi"
+          #   cpu: "512m"
+          # limits:
+          #   memory: "1024Mi"
+          #   cpu: "1024m"
+        ports:
+        - containerPort: 3600
+          protocol: TCP
+        volumeMounts:
+        - name: tmp-pvc
+          mountPath: "/tmp/"
+        - name: data-pvc
+          mountPath: "/export/data/"
+        - name: config-pvc
+          mountPath: "/export/config/"
+        - name: services-pvc
+          mountPath: "/export/services/"
+        - name: src-pvc
+          mountPath: "/export/src/"
+        # readinessProbe:
+        #   failureThreshold: 3
+        #   httpGet:
+        #     path: /health
+        #     port: 3600
+        #     scheme: HTTP
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 10
+        #   successThreshold: 1
+        #   timeoutSeconds: 1
+        # livenessProbe:
+        #   failureThreshold: 3
+        #   httpGet:
+        #     path: /health
+        #     port: 3600
+        #     scheme: HTTP
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 10
+        #   successThreshold: 1
+        #   timeoutSeconds: 1
+        imagePullPolicy: Always
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: registry-credentials
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: tmp-pvc
+        persistentVolumeClaim:
+          claimName: tmp
+      - name: data-pvc
+        persistentVolumeClaim:
+          claimName: data
+      - name: config-pvc
+        persistentVolumeClaim:
+          claimName: config
+      - name: services-pvc
+        persistentVolumeClaim:
+          claimName: services
+      - name: src-pvc
+        persistentVolumeClaim:
+          claimName: src

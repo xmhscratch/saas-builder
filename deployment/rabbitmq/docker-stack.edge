@@ -1,0 +1,124 @@
+version: '3.9'
+
+services:
+  svc:
+    image: localhost:5000/rabbitmq:latest
+    environment:
+    - CLUSTER_ROLE=master
+    - RABBITMQ_NODENAME=rbmq@rabbitmq_svc
+    - RABBITMQ_ERLANG_COOKIE={{ RABBITMQ_ERLANG_COOKIE }}
+    - RABBITMQ_DEFAULT_USER={{ RABBITMQ_DEFAULT_USER }}
+    - RABBITMQ_DEFAULT_PASS={{ RABBITMQ_DEFAULT_PASS }}
+    - RABBITMQ_HIPE_COMPILE={{ RABBITMQ_HIPE_COMPILE }}
+    ports:
+    - 4369:4369
+    - 5671:5671
+    - 5672:5672
+    - 15672:15672
+    networks:
+    - backend
+    volumes:
+    - data:/var/lib/rabbitmq
+    deploy:
+      placement:
+        constraints:
+        - node.role == manager
+        - node.hostname == {{ NODE_SVC_HOSTNAME }}
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 2048MB
+        reservations:
+          cpus: '0.1'
+          memory: 32MB
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 180s
+
+  svcn001:
+    image: localhost:5000/rabbitmq:latest
+    environment:
+    - CLUSTER_ROLE=slave
+    - CLUSTER_WITH=rbmq@rabbitmq_svc
+    - RABBITMQ_NODENAME=rbmq@rabbitmq_svcn001
+    - RABBITMQ_ERLANG_COOKIE={{ RABBITMQ_ERLANG_COOKIE }}
+    - RABBITMQ_HIPE_COMPILE={{ RABBITMQ_HIPE_COMPILE }}
+    networks:
+    - backend
+    depends_on:
+    - svc
+    volumes:
+    - data:/var/lib/rabbitmq
+    deploy:
+      placement:
+        constraints:
+        - node.role != manager
+        - node.hostname == {{ NODE_SVCN001_HOSTNAME }}
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 1536MB
+        reservations:
+          cpus: '0.1'
+          memory: 32MB
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 180s
+
+  svcn002:
+    image: localhost:5000/rabbitmq:latest
+    environment:
+    - CLUSTER_ROLE=slave
+    - CLUSTER_WITH=rbmq@rabbitmq_svc
+    - RABBITMQ_NODENAME=rbmq@rabbitmq_svcn002
+    - RABBITMQ_ERLANG_COOKIE={{ RABBITMQ_ERLANG_COOKIE }}
+    - RABBITMQ_HIPE_COMPILE={{ RABBITMQ_HIPE_COMPILE }}
+    networks:
+    - backend
+    depends_on:
+    - svc
+    volumes:
+    - data:/var/lib/rabbitmq
+    deploy:
+      placement:
+        constraints:
+        - node.role != manager
+        - node.hostname == {{ NODE_SVCN002_HOSTNAME }}
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 1536MB
+        reservations:
+          cpus: '0.25'
+          memory: 128MB
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 180s
+
+networks:
+  backend:
+    driver: overlay
+    attachable: true
+
+volumes:
+  data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: '/home/web/data/rabbitmq/rabbitmq_data/'

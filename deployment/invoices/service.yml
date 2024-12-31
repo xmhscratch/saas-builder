@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    service.name: account
+  name: account
+spec:
+  type: NodePort
+  ports:
+  - name: "http"
+    port: 80
+    targetPort: 3010
+  selector:
+    service.name: account

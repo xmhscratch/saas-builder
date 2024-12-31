@@ -1,0 +1,11 @@
+{
+    "name": "deploy.microservice",
+    "private": true,
+    "type": "module",
+    "scripts": {
+      "build": "docker build -t localhost:5000/microservice:latest ./",
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {}
+  }
+  

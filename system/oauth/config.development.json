@@ -1,0 +1,32 @@
+{
+    "debug": false,
+    "port": "3999",
+    "clusterHostName": "localdomain.local",
+    "database": {
+        "type": "mysql",
+        "host": "mariadb_master",
+        "port": 3306,
+        "user": "root",
+        "password": "mCWDtkT6h9NMHsZq",
+        "databaseName": "localdomain_www",
+        "maxIdleConns": 5,
+        "maxOpenConns": 5
+    },
+    "redisConnectionString": "redis://:SyyA7uBprWZcycC3@redis_master:6379/1",
+    "oauth": {
+        "accessTokenLifetime": 3600,
+        "refreshTokenLifetime": 1209600,
+        "authCodeLifetime": 3600
+    },
+    "session": {
+        "secret": "$2a$10$MPUJf33Z0p0leLEmUXmkF.",
+        "path": "/",
+        "maxAge": 604800,
+        "httpOnly": true
+    },
+    "domains": {
+        "www": "api.localdomain.local"
+    },
+    "authLoginUrl": "//account.localdomain.local/auth/",
+    "dashboardUrl": "//localdomain.local/"
+}
