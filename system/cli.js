@@ -8,9 +8,11 @@ const selectAction = async () =>
       message: "DevServer action",
       type: "list",
       choices: [
-        { name: "Init service", value: "init-service" },
-        { name: "Start dev server", value: "start-dev" },
+        { name: "Start dev server (Development)", value: "start-dev" },
+        { name: "Start NFS server (Development)", value: "start-nfs" },
+        { name: "Start ingress (Development)", value: "start-ingress" },
         { name: "Generate nuxt files", value: "build-nuxt" },
+        { name: "Init service", value: "init-service" },
         { name: "Build docker image", value: "build-docker" },
       ],
     },
@@ -67,6 +69,24 @@ const execCommand = async (action, target) => {
       await spawn(
         "sh",
         ["-c", `${npmCommand} run --workspace=${target} dev`],
+        { stdio: "inherit" },
+        Promise.resolve
+      );
+      break;
+    }
+    case "start-nfs": {
+      await spawn(
+        "sh",
+        ["-c", `${npmCommand} run --workspace=${target} start`],
+        { stdio: "inherit" },
+        Promise.resolve
+      );
+      break;
+    }
+    case "start-ingress": {
+      await spawn(
+        "sh",
+        ["-c", `${npmCommand} run --workspace=${target} start`],
         { stdio: "inherit" },
         Promise.resolve
       );
@@ -130,6 +150,14 @@ const errorHandler = (error) => {
         errorHandler
       );
       await execCommand(action, target).catch(errorHandler);
+      break;
+    }
+    case "start-nfs": {
+      await execCommand(action, 'deploy.nfs').catch(errorHandler);
+      break;
+    }
+    case "start-ingress": {
+      await execCommand(action, 'ingress').catch(errorHandler);
       break;
     }
     default:

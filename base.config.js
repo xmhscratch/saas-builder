@@ -5,6 +5,10 @@ const nuxtSrcDir = fileURLToPath(new URL('./.nuxt', import.meta.url))
 
 export default {
   compatibilityDate: '2024-11-01',
+  devServer: {
+    host: '0.0.0.0',
+    url: 'http://0.0.0.0:3000'
+  },
   devtools: { enabled: true },
   alias: {
     '~': fileURLToPath(new URL('./', import.meta.url)),
@@ -15,7 +19,7 @@ export default {
   //   dirs: [`${nuxtSrcDir}/lib`]
   // },
   app: {
-    cdnURL: 'http://localhost:3000/'
+    cdnURL: 'https://cdn.dovaq.com'
   },
   dir: {
     public: fileURLToPath(new URL('./public', import.meta.url)),
@@ -32,9 +36,18 @@ export default {
     }
   },
   modules: [
+    "nuxt-security",
+    "@nuxt/image",
     '@nuxtjs/tailwindcss',
     'shadcn-nuxt',
   ],
+  security: {
+    headers: {
+      contentSecurityPolicy: {
+        'img-src': ["'self'", "https:", "data:"]
+      }
+    }
+  },
   postcss: {
     plugins: {
       tailwindcss: {},

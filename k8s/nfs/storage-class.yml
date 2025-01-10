@@ -1,0 +1,19 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: tmp-nfs
+provisioner: localdomain/tmp-nfs
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+parameters:
+  archiveOnDelete: "false"
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: data-nfs
+provisioner: localdomain/data-nfs
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+parameters:
+  archiveOnDelete: "false"

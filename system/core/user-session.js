@@ -35,34 +35,42 @@ class UserSession {
             .authenticate({ emailAddress, username }, inputPassword)
             .catch(handleError)
 
-        this.session.user = userInfo.id
-
-        await Promise
-            .promisify(this.session.save.bind(this.session))
-            .call(this.session)
-            .catch(handleError)
-
         return userInfo
     }
 
     async register(
-        { emailAddress, password, avatar, status },
-        additionalAttributes,
+        { emailAddress, inputPassword },
+        { avatar, status, ...additionalAttributes },
     ) {
-        const { userInfo, isCreated } = await $.User
-            .findOrCreate({
-                where: { emailAddress, password },
-                defaults: {
-                    ...{ emailAddress, password, avatar, status },
-                    ...(additionalAttributes || {}),
-                },
-            })
+        let userInfo, isCreated = false
+
+        userInfo = await this
+            .authenticate({ emailAddress }, inputPassword)
             .catch(handleError)
 
-        const inputPassword = _.get(userInfo, 'rawPassword')
-        await this
-            .login({ emailAddress, username }, inputPassword)
-            .catch(handleError)
+        if (!userInfo) {
+            const searchResult = await $.User
+                .findOrCreate({
+                    where: { emailAddress },
+                    defaults: {
+                        ...{ emailAddress, avatar, status },
+                        ...(additionalAttributes || {}),
+                    },
+                })
+                .catch(handleError)
+
+            _.extend({ userInfo, isCreated }, searchResult)
+        }
+
+        if (isCreated) {
+            await this
+                .resetPassword(emailAddress, newPassword)
+                .catch(handleError)
+
+            await this
+                .login({ emailAddress, username }, inputPassword)
+                .catch(handleError)
+        }
 
         this.session.isNewUser = isCreated
         return { isCreated, userInfo }
@@ -75,31 +83,7 @@ class UserSession {
             .catch(handleError)
     }
 
-    async verifyAccount() {
-        // return source.Users
-        //     .findOne({
-        //         where: {
-        //             id: req.params.id,
-        //             status: source.Users.STATUS_UNVERIFIED
-        //         }
-        //     })
-        //     .then((model) => {
-        //         if (!model) return res.redirect('/auth/')
-        //         return model.update({
-        //             status: source.Users.STATUS_OK
-        //         }).then(function() {
-        //             // helper('@mailer').send(
-        //             //     'confirm', 'admin@tiachop.net',
-        //             //     'TiaChop.net - Welcome', {
-        //             //         to: model.get('email_address')
-        //             //     }, {
-        //             //         username: model.get('name')
-        //             //     })
-
-        //             return res.redirect('/auth/')
-        //         })
-        //     })
-    }
+    async verifyAccount() {}
 
     async resetPassword(emailAddress, newPassword) {
         const bcrypt = require('bcrypt')
@@ -128,7 +112,6 @@ class UserSession {
         await userModel
             .update({
                 password: hashedPassword,
-                rawPassword: newPassword,
             })
             .catch(handleError)
 
@@ -171,9 +154,18 @@ class UserSession {
         const userId = userModel.get('id')
         const user = new $.User(userId)
 
-        return user
+        const userInfo = user
             .getInfo()
             .catch(handleError)
+
+        this.session.user = userInfo.id
+
+        await Promise
+            .promisify(this.session.save.bind(this.session))
+            .call(this.session)
+            .catch(handleError)
+
+        return userInfo
     }
 }
 

@@ -1,0 +1,58 @@
+version: '3.9'
+
+services:
+  modprobe:
+    image: busybox:latest
+    cap_add:
+    - SYS_MODULE
+    volumes:
+    - type: bind
+      source: /lib/modules
+      target: /lib/modules
+      read_only: true
+    restart: "no"
+    command: /bin/sh -euc 'modprobe nfsd; modprobe nfs;'
+
+  nfs_server:
+    image: erichough/nfs-server:2.2.1
+    container_name: nfs_server
+    cap_add:
+    - SYS_ADMIN
+    - SYS_MODULE
+    - NET_ADMIN
+    depends_on:
+    - modprobe
+    ports:
+    - 2049:2049
+    - 2049:2049/udp
+    - 111:111
+    - 111:111/udp
+    - 32765:32765
+    - 32765:32765/udp
+    - 32767:32767
+    - 32767:32767/udp
+    volumes:
+    - ${NFS_CONFIG}/exports.txt:/etc/exports:ro
+    - data:/home/web/
+    environment:
+    - NFS_VERSION=4
+    - NFS_LOG_LEVEL=DEBUG
+    security_opt:
+    - apparmor=nfs
+    deploy:
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 10
+        window: 180s
+
+volumes:
+  data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: ${NFS_WEBROOT}

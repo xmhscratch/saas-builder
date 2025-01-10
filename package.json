@@ -1,5 +1,5 @@
 {
-  "name": "saas",
+  "name": "dovaq",
   "version": "1.0.0",
   "main": "./system/cli.js",
   "scripts": {
@@ -17,6 +17,7 @@
   "workspaces": [
     "./cms",
     "./auth",
+    "./ingress",
     "./deployment/**",
     "./services/**"
   ],
@@ -31,17 +32,17 @@
     "lodash": "^4.17.15"
   },
   "devDependencies": {
-    "del": "6.1.1",
-    "fb-watchman": "2.0.1",
+    "del": "^8.0.0",
+    "fb-watchman": "^2.0.2",
     "inquirer": "^12.2.0",
     "morgan": "1.10.0",
-    "request": "2.88.2",
     "request-debug": "0.2.0",
     "sequelize-auto": "0.8.8",
-    "sequelize-cli": "6.4.1"
+    "sequelize-cli": "^6.6.2"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.31.0",
+    "@nuxt/image": "^1.9.0",
     "@nuxtjs/color-mode": "^3.5.2",
     "@nuxtjs/tailwindcss": "^6.12.2",
     "@types/lodash-es": "^4.17.12",
@@ -87,6 +88,7 @@
     "multer": "1.4.5-lts.1",
     "mustache": "4.2.0",
     "nodemailer": "^6.9.16",
+    "nuxt-security": "^2.1.5",
     "oauth": "^0.10.0",
     "object-hash": "^3.0.0",
     "parse-json": "^8.1.0",
@@ -103,6 +105,8 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
+    "threads": "^1.7.0",
+    "tiny-worker": "^2.3.0",
     "tough-cookie": "^5.0.0",
     "uuid": "^11.0.3",
     "v-calendar": "^3.1.2",

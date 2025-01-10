@@ -13,14 +13,6 @@ module.exports = function (sequelize, DataTypes) {
                 allowNull: false,
                 field: '_password',
             },
-            rawPassword: {
-                type: DataTypes.TEXT(),
-                allowNull: false,
-                field: '_raw_password',
-                get() {
-                    return this.getDataValue('password')
-                },
-            },
             username: {
                 type: DataTypes.STRING(100) + ' CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci',
                 allowNull: false,

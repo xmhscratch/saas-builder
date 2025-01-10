@@ -19,7 +19,6 @@ type contextKey int
 // 	Username     string    `json:"username"`
 // 	EmailAddress string    `json:"emailAddress"`
 // 	Password     string    `json:"password"`
-// 	RawPassword  string    `json:"rawPassword"`
 // 	CreatedAt    time.Time `json:"createdAt"`
 // 	UpdatedAt    time.Time `json:"updatedAt"`
 // 	Status       int32     `json:"status"`

@@ -1,0 +1,76 @@
+version: '3.9'
+
+services:
+  app:
+    image: localhost:5000/ingress:latest
+    ports:
+    - 80:80
+    - 443:443
+    networks:
+    - backend
+    environment:
+    - ENV_NAME=development
+    - CLUSTER_MASTER_SERVER=127.0.0.1
+    - LTD_DOMAIN=dovaq.com
+    volumes:
+    - tmp:/tmp/
+    - confd:/usr/local/openresty/nginx/conf/conf.d/
+    - certs:/usr/local/openresty/nginx/conf/certs.d/
+    - html:/usr/local/openresty/nginx/html/
+    - webroot:/export/webroot/
+    # entrypoint: ['sh', '-c', '/export/entrypoint.sh']
+    # command: ["/usr/bin/openresty", "-g", "daemon off;"]
+    # deploy:
+    #   update_config:
+    #     parallelism: 2
+    #     delay: 10s
+    #   restart_policy:
+    #     condition: on-failure
+    #     delay: 5s
+    #     max_attempts: 3
+    #     window: 180s
+
+networks:
+  backend:
+    driver: overlay
+    attachable: true
+
+volumes:
+  tmp:
+    driver: local
+    # driver_opts:
+    #   type: none
+    #   o: bind
+    #   device: '/home/web/data/tmp/'
+
+  certs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: './certs/'
+
+  html:
+    driver: local
+    # driver_opts:
+    #   type: none
+    #   o: bind
+    #   device: '/home/web/data/html/'
+
+  confd:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: './conf/conf.d/'
+
+  webroot:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${NFS_WEBROOT}
+    # driver_opts:
+    #   type: nfs
+    #   o: addr=${NFS_HOST_ADDR},nfsvers=4,rw,exec,nodev,noatime,nodiratime
+    #   device: ':/home/web/'

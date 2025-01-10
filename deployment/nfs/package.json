@@ -1,0 +1,9 @@
+{
+  "name": "deploy.nfs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "sh -c \"NFS_WEBROOT=$(realpath ../../../) NFS_CONFIG=$(realpath ./) docker-compose -f ./docker-compose.yml up -d\""
+  },
+  "dependencies": {}
+}

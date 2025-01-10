@@ -3,10 +3,7 @@ set -eu
 
 dirPaths=(
     "/tmp/ingress/"
-    "/tmp/ingress/cache/x/"
-    "/tmp/ingress/cache/vendor/"
-    "/tmp/ingress/cache/web/"
-    "/tmp/ingress/cache/webx/"
+    "/tmp/ingress/cache/"
 )
 
 for dirPath in "${dirPaths[@]}"

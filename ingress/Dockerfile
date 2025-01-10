@@ -1,15 +1,15 @@
-FROM openresty/openresty:1.21.4.1-3-centos7
+FROM openresty/openresty:centos
 
 WORKDIR /export
 
-ENV ENV_NAME development
-ENV LTD_DOMAIN localhost
-ENV CLUSTER_MASTER_SERVER 127.0.0.1
-ENV ENABLE_PAGE_CACHE 1
+ENV ENV_NAME=development
+ENV LTD_DOMAIN=localhost
+ENV CLUSTER_MASTER_SERVER=127.0.0.1
+ENV ENABLE_PAGE_CACHE=1
 
 COPY [ "conf/nginx.conf", "/usr/local/openresty/nginx/conf/" ]
 COPY [ "conf/mime.types", "/usr/local/openresty/nginx/conf/" ]
-COPY [ "entrypoint.sh", "./" ]
+COPY [ "entrypoint.sh", "/export/" ]
 
 RUN \
     yum install -y epel-release; \
@@ -47,7 +47,7 @@ RUN \
     opm get openresty/lua-resty-lrucache; \
     opm get openresty/lua-resty-dns; \
     \
-    chmod +x /export/entrypoint.sh; \
+    chmod u+x /export/entrypoint.sh; \
     \
     # cleanup
     rm -rf ../luarocks-3.9.1.tar.gz; \

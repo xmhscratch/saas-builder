@@ -1,0 +1,75 @@
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: tmp-nfs-provisioner
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: tmp-nfs-provisioner
+    spec:
+      serviceAccountName: nfs-client-provisioner
+      containers:
+        - name: tmp-nfs-provisioner
+          image: quay.io/external_storage/nfs-client-provisioner:latest
+          env:
+            - name: PROVISIONER_NAME
+              value: localdomain/tmp-nfs
+            - name: NFS_SERVER
+              value: localhost
+            - name: NFS_PATH
+              value: /home/web/tmp/
+          resources: {}
+          volumeMounts:
+          - name: tmp
+            mountPath: /persistentvolumes
+          imagePullPolicy: Always
+      imagePullSecrets:
+      - name: localdomain-quayio-pull-secret
+      restartPolicy: Always
+      volumes:
+        - name: tmp
+          nfs:
+            server: localhost
+            path: /home/web/tmp/
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: data-nfs-provisioner
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: data-nfs-provisioner
+    spec:
+      serviceAccountName: nfs-client-provisioner
+      containers:
+        - name: data-nfs-provisioner
+          image: quay.io/external_storage/nfs-client-provisioner:latest
+          env:
+            - name: PROVISIONER_NAME
+              value: localdomain/data-nfs
+            - name: NFS_SERVER
+              value: localhost
+            - name: NFS_PATH
+              value: /home/web/data/localdomain/
+          resources: {}
+          volumeMounts:
+          - name: data
+            mountPath: /persistentvolumes
+          imagePullPolicy: Always
+      imagePullSecrets:
+      - name: localdomain-quayio-pull-secret
+      restartPolicy: Always
+      volumes:
+        - name: data
+          nfs:
+            server: localhost
+            path: /home/web/data/localdomain/

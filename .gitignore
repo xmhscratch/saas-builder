@@ -73,3 +73,6 @@ typings/
 # golang
 go.sum
 vendor/
+certs/
+*.tar
+*.tar.gz
