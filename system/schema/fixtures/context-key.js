@@ -1,5 +1,4 @@
 module.exports = {
-    // shopify: '2da726dc-99b4-4826-9170-a408205e3494',
     variable: 'a7f33576-ffe0-468f-af0d-2adee6f03d4c',
     template: {
         ingress: 'cdddc5a3-38d5-4f4e-bc06-9fe6d74e2644',

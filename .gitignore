@@ -76,3 +76,5 @@ vendor/
 certs/
 *.tar
 *.tar.gz
+
+assets/components/

@@ -124,13 +124,6 @@ class Google extends TenantRecord {
             organizationId,
         } = integrationInfo
 
-        // const {
-        //     clientId,
-        //     // clientSecret,
-        //     redirectURI,
-        //     // nonce,
-        // } = config('shopify')
-
         const states = JSON.stringify({
             // shopName,
             organizationId,
